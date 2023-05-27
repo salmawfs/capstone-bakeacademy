@@ -13,12 +13,11 @@ require('dotenv').config();
 
 // Home
 const indexHandler = (req, h) => {
-    const login = req.state.login;
+    const token = req.state.token;
     const data = req.state.data;
 
-    console.log(login);
-    if(login) {
-        return h.response({login, data}).code(200);
+    if(token) {
+        return h.response({token, data}).code(200);
     } else {
         return h.response({message: 'Akses dilarang, silahkan login terlebih dahulu.'}).code(403);
     }
@@ -91,11 +90,10 @@ const loginHandler = async (req, h) => {
         const credentials = { id: user.id, username: user.username, nama: user.nama, email: user.email, password: user.password, alergi: user.alergi, foto:user.foto};
 
         if(isValid) {
-            h.state('login', { isLogin: true});
-            h.state('data', { user: credentials});
-
             // generate jwt token
             const token = jwt.sign({ userId: user.id, username: user.username },secretKey, { expiresIn: '1h' });
+            h.state('data', credentials);
+            h.state('token', token);
             return h.response({message: 'Login sukses', token}).code(200);
         }
     }
@@ -104,12 +102,13 @@ const loginHandler = async (req, h) => {
 }
 // Logout
 const logoutHandler = async (req, h) => {
-    const login = req.state.login;
+    const token = req.state.token;
     const data = req.state.data;
-    if(login) {
+    if(token) {
         if(data) {
             h.unstate('data');
             h.unstate('login');
+            h.unstate('token');
 
             return h.response({message: 'Logout sukses'}).code(200); 
         }
@@ -119,8 +118,8 @@ const logoutHandler = async (req, h) => {
 }
 // CHATGPT
 const chatHandler = async (req, h) => {
-    const login = req.state.login;
-    if(login) {
+    const token = req.state.token;
+    if(token) {
         const { q } = req.payload;
         const options = {
             method: 'POST',
@@ -147,10 +146,10 @@ const chatHandler = async (req, h) => {
 }
 // Upload Image to Bucket
 const uploadImageHandler = async (req, h) => {
-    const login = req.state.login;  
+    const token = req.state.token;  
     const file = req.payload.file;
     // console.log(file);
-    if(login) {
+    if(token) {
         // Inisiasi GCS
         const storage = new Storage({
             projectId: process.env.PROJECT_ID_GCP,

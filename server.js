@@ -14,8 +14,15 @@ const init = async () => {
         },
     });
 
-    // Register hapi-auth-jwt2 plugin
-    await server.register(require('hapi-auth-jwt2'));
+    // Cookies
+    server.state('token', {
+        ttl: 24 * 60 * 60 * 1000,     // 1 day
+        isSecure: false,
+        isHttpOnly: true,
+        encoding: 'base64json',
+        clearInvalid: false,
+       strictHeader: true
+     });
 
     server.state('login', {
         ttl: 24 * 60 * 60 * 1000,     // 1 day
@@ -34,6 +41,9 @@ const init = async () => {
         clearInvalid: false,
        strictHeader: true
      });
+
+     // Register hapi-auth-jwt2 plugin
+    await server.register(require('hapi-auth-jwt2'));
 
     // Configure JWT authentication strategy
     server.auth.strategy('jwt', 'jwt', {
