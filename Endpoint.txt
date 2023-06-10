@@ -1,12 +1,12 @@
 Endpoint
-Register: https://bakeacademy-capstone.et.r.appspot.com/register (POST)
-Login: https://bakeacademy-capstone.et.r.appspot.com/login (POST)
-Logout: https://bakeacademy-capstone.et.r.appspot.com/ (GET)
-Index: https://bakeacademy-capstone.et.r.appspot.com/ (GET)
-Upload Images: https://bakeacademy-capstone.et.r.appspot.com/upload (POST)
-Get Resep: https://bakeacademy-capstone.et.r.appspot.com/recipes/{id} (GET)
+Register: http://<your server>/register (POST)
+Login: http://<your server>/login (POST)
+Logout: http://<your server>/ (GET)
+Index: http://<your server>/ (GET)
+Upload Images: http://<your server>/upload (POST)
+Get Resep: http://<your server>/recipes/{id} (GET)
 NEW
-Update Profil: https://bakeacademy-capstone.et.r.appspot.com/update/profile/{id} (POST)
-Save Bookmark: https://bakeacademy-capstone.et.r.appspot.com/save/recipes (POST)
-Get Bookmark: https://bakeacademy-capstone.et.r.appspot.com/bookmark/{id_user} (GET)
-Delete Bookmark: https://bakeacademy-capstone.et.r.appspot.com/bookmark/delete/{id}
+Update Profil: http://<your server>/update/profile/{id} (POST)
+Save Bookmark: http://<your server>/save/recipes (POST)
+Get Bookmark: http://<your server>/bookmark/{id_user} (GET)
+Delete Bookmark: http://<your server>/bookmark/delete/{id}
