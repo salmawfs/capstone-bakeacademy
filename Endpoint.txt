@@ -6,6 +6,7 @@ Index: https://bakeacademy-capstone.et.r.appspot.com/ (GET)
 Upload Images: https://bakeacademy-capstone.et.r.appspot.com/upload (POST)
 Get Resep: https://bakeacademy-capstone.et.r.appspot.com/recipes/{id} (GET)
 NEW
+Update Profil: https://bakeacademy-capstone.et.r.appspot.com/update/profile/{id} (POST)
 Save Bookmark: https://bakeacademy-capstone.et.r.appspot.com/save/recipes (POST)
 Get Bookmark: https://bakeacademy-capstone.et.r.appspot.com/bookmark/{id_user} (GET)
-Update Profil: https://bakeacademy-capstone.et.r.appspot.com/update/profile/{id} (POST)
+Delete Bookmark: https://bakeacademy-capstone.et.r.appspot.com/bookmark/delete/{id}
