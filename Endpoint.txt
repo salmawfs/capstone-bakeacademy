@@ -1,0 +1,11 @@
+Endpoint
+Register: https://bakeacademy-capstone.et.r.appspot.com/register (POST)
+Login: https://bakeacademy-capstone.et.r.appspot.com/login (POST)
+Logout: https://bakeacademy-capstone.et.r.appspot.com/ (GET)
+Index: https://bakeacademy-capstone.et.r.appspot.com/ (GET)
+Upload Images: https://bakeacademy-capstone.et.r.appspot.com/upload (POST)
+Get Resep: https://bakeacademy-capstone.et.r.appspot.com/recipes/{id} (GET)
+NEW
+Save Bookmark: https://bakeacademy-capstone.et.r.appspot.com/save/recipes (POST)
+Get Bookmark: https://bakeacademy-capstone.et.r.appspot.com/bookmark/{id_user} (GET)
+Update Profil: https://bakeacademy-capstone.et.r.appspot.com/update/profile/{id} (POST)

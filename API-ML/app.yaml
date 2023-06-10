@@ -1,0 +1,21 @@
+runtime: python39
+service: model-ml
+
+instance_class: F4
+
+resources:
+  cpu: 4
+  memory_gb: 8
+  disk_size_gb: 10
+  volumes:
+    - name: ramdisk1
+      volume_type: tmpfs
+      size_gb: 0.5
+
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 1
+  max_instances: 10
+
+env_variables:
+  GOOGLE_APPLICATION_CREDENTIALS: guztiart-09-88ab4c761d11.json
