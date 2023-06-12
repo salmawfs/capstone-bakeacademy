@@ -10,16 +10,35 @@ Target Server Type    : MYSQL
 Target Server Version : 50505
 File Encoding         : 65001
 
-Date: 2023-06-05 13:35:22
+Date: 2023-06-10 19:40:04
 */
 
 SET FOREIGN_KEY_CHECKS=0;
+-- ----------------------------
+-- Table structure for `alergi`
+-- ----------------------------
+DROP TABLE IF EXISTS `alergi`;
+CREATE TABLE `alergi` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nama` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- ----------------------------
+-- Records of alergi
+-- ----------------------------
+INSERT INTO `alergi` VALUES ('1', 'Telur');
+INSERT INTO `alergi` VALUES ('2', 'Susu');
+INSERT INTO `alergi` VALUES ('3', 'Gula');
+INSERT INTO `alergi` VALUES ('4', 'Kacang');
+INSERT INTO `alergi` VALUES ('5', 'Gluten');
+
 -- ----------------------------
 -- Table structure for `bookmark`
 -- ----------------------------
 DROP TABLE IF EXISTS `bookmark`;
 CREATE TABLE `bookmark` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_user` int(11) DEFAULT NULL,
   `id_resep` int(11) DEFAULT NULL,
   `foto` text DEFAULT NULL,
@@ -29,7 +48,7 @@ CREATE TABLE `bookmark` (
   KEY `resep1` (`id_resep`),
   CONSTRAINT `resep1` FOREIGN KEY (`id_resep`) REFERENCES `resep` (`id`),
   CONSTRAINT `user1` FOREIGN KEY (`id_user`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
 -- Records of bookmark
@@ -46,7 +65,7 @@ CREATE TABLE `resep` (
   `bahan` text DEFAULT NULL,
   `langkah` text DEFAULT NULL,
   `nutrisi` text DEFAULT NULL,
-  `link` text DEFAULT NULL,
+  `link` text DEFAULT '',
   `created_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)
@@ -76,12 +95,13 @@ CREATE TABLE `users` (
   `email` varchar(255) DEFAULT '',
   `nama` varchar(255) DEFAULT NULL,
   `password` text DEFAULT NULL,
-  `alergi` varchar(255) DEFAULT NULL,
+  `id_alergi` varchar(255) DEFAULT NULL,
   `foto` text DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES ('14', 'agus', 'agus@gmail.com', 'agus', '$2b$10$g39OwbUWUgmBttdMAzjGl.g4tBGVzczrWDQHReP5GqC4Yn7HNiYoC', 'Keju', null);
+INSERT INTO `users` VALUES ('1', 'agus', 'agus@gmail.com', 'agus', '$2b$10$87FfAjIlfl6NIi4IH/ywAO2MW4EJD0BVoF7dSkj87kgQv0MaMPpjK', '[1, 2]', 'profile_1686318080508.jpg');
+INSERT INTO `users` VALUES ('19', 'agustiar', 'agustiar@gmail.com', 'agus', '$2b$10$aMOby2ZdVYUbb1sjryf71ukQ6e/1cXx0qUWlY4RmPscUy/GjYsDDa', null, null);
