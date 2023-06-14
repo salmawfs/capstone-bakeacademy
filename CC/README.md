@@ -1,6 +1,6 @@
 API capstone-bakeacademy
 ==
-The Backend Language Using Hapi.js.<br>
+The Backend Services Using Node.js (Hapi Framework) and Python (Flask Framework).<br>
 To install Node.js dependencies, go to API-JS folder and follow this code blocks:
 ```bash
 npm install
