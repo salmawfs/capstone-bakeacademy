@@ -332,22 +332,38 @@ const updateProfileHandler = async (req, h) => {
                 try {
                     const [profile] = await conn.query('SELECT foto FROM users WHERE id = ?', [id]);
                     const resFoto = profile[0];
+                    // const urlResFoto = `upload-foto/profile/${resFoto.foto}`;
 
-                    if(resFoto) {
-                        const bucketName = process.env.BUCKET_NAME;
-                        const filePath = `upload-foto/profile/${resFoto.foto}`;
-                        const deleteImg = storage.bucket(bucketName).file(filePath).delete();
-                        if(deleteImg) {
-                            console.log('Image deleted successfully.');
+                    // return {resFoto, filename};
+                    const bucketName = process.env.BUCKET_NAME;
+                    const filePath = `upload-foto/profile/${resFoto.foto}`;
+
+                    const cekFile = storage.bucket(bucketName).file(filePath);
+                    // Check if the file exists
+                    cekFile.exists(async (err, exists) => {
+                        if (err) {
+                          console.error('Error checking file existence:', err);
+                          return;
                         }
-                    } else {
-                        console.log('tidak ada foto');
-                    }
-
+                      
+                        if (exists) {
+                          // The file exists, so delete it
+                          cekFile.delete((err) => {
+                            if (err) {
+                              console.error('Error deleting file:', err);
+                              return;
+                            }
+                      
+                            console.log('File deleted successfully.');
+                          });
+                        } else {
+                            console.log('File does not exist in GCS.');
+                        }
+                      });    
                     const query = 'UPDATE users SET username = ? , email = ?, nama = ?, id_alergi = ?, foto = ? WHERE id = ?';
                     const result = await conn.query(query, [username, email, nama, id_alergi, filename, id]);
                     
-                    return h.response({status: 'success', message: 'Data berhasil diubah'}).code(200);
+                    return h.response({status: 'success', message: 'Data berhasil diubah', foto: filename}).code(200);      
                 } catch(err) {
                     return h.response({status: 'error', message: 'Data gagal diubah'+err}).code(500);
                 }
@@ -409,15 +425,31 @@ const deleteBookmarkHandler = async(req, h) => {
 
         const bucketName = process.env.BUCKET_NAME;
         const filePath = `upload-foto/roti/${resFoto.foto}`;
-        const deleteImg = storage.bucket(bucketName).file(filePath).delete();
-        if(deleteImg) {
-            console.log('Image deleted successfully.');
-        }
+        const cekFile = storage.bucket(bucketName).file(filePath);
+        // Check if the file exists
+        cekFile.exists(async (err, exists) => {
+            if (err) {
+                console.error('Error checking file existence:', err);
+                return;
+            }
+            
+            if (exists) {
+                // The file exists, so delete it
+                cekFile.delete((err) => {
+                if (err) {
+                    console.error('Error deleting file:', err);
+                    return;
+                }
+            
+                console.log('File deleted successfully.');
+                });
+            } else {
+                console.log('File does not exist in GCS.');
+            }
+        });  
         
         const result = await conn.query(`DELETE FROM bookmark WHERE id = ?`, [id]);
-        if(result) {
-            return h.response({status: 'success', message: 'Data berhasil dihapus'}).code(200);
-        }
+        return h.response({status: 'success', message: 'Data berhasil dihapus'}).code(200);
     } catch(err) {
         return h.response({status: 'error', message: 'Internal Server Error: '+err}).code(200);
     }
