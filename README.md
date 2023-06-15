@@ -7,7 +7,7 @@ Indonesia is a country with diverse cultural heritages and a variety of traditio
 We want to introduce a wide range of bakery goods and teach people how to make them through BakeAcademy.<br>
 Additionally, the app can serve as a warning for users who are allergic to certain ingredients by displaying the food ingredients and showing its nutritional value.
 
-Go to CC Branch to see API Services
-Go to ML Branch to see Models
-Go to MD Branch to see Application File
+Go to CC Branch to see API Services<br>
+Go to ML Branch to see Models<br>
+Go to MD Branch to see Application File<br>
 
