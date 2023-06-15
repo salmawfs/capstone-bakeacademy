@@ -51,7 +51,7 @@ const registerHandler = async (req, h) => {
         password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required().messages({
             'any.required': 'Password tidak boleh kosong.'
         }),
-        alergi: Joi.string(),
+        id_alergi: Joi.string(),
         foto: Joi.string()
       });
 
@@ -89,7 +89,7 @@ const loginHandler = async (req, h) => {
 
     if(user) {
         const isValid = await bcrypt.compare(password, user.password);
-        const credentials = { id: user.id, username: user.username, nama: user.nama, email: user.email, password: user.password, alergi: user.alergi, foto:user.foto};
+        const credentials = { id: user.id, username: user.username, nama: user.nama, email: user.email, password: user.password, id_alergi: user.id_alergi, foto:user.foto};
 
         if(isValid) {
             // generate jwt token
@@ -234,67 +234,158 @@ const saveBookmarkHandler = async (req, h) => {
 }
 // Edit profile
 const updateProfileHandler = async (req, h) => { 
-    const { id, username, email, nama, id_alergi } = req.payload;
+    const id = req.params.id;
+    const { username, email, nama, id_alergi } = req.payload;
     const file = req.payload.file;
 
-    if(file != null || file == '') {
-        // Inisiasi GCS
-        const storage = new Storage({
-            projectId: process.env.PROJECT_ID_GCP,
-            keyFilename: process.env.KEY_STORAGE,
-        });
-
-        const bucketName = process.env.BUCKET_NAME;
-        const bucket = storage.bucket(bucketName);
-
-        // Cek apakah file terupload
-        if (file.hapi.filename === '') {
-            return h.response({ message: 'Belum ada file yang terupload' }).code(400);
+    const [queryCheckUser] = await conn.query('SELECT * FROM users WHERE id = ?', [id]);
+    const dataUser = queryCheckUser[0];
+    if(dataUser) {
+        // Cek email apakah sudah ada atau belum
+        const query = 'SELECT COUNT(*) as count FROM users WHERE email = ?';
+        const [rows] = await conn.query(query, [email]);
+        const count = rows[0].count;
+        const isTaken = count > 1;
+        if(isTaken) {
+            return h.response({message: 'Email sudah digunakan.'}).code(200);
         }
 
-        // Validate tipe gambar
-        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
-        // Check if the file extension is allowed
-        const ext = path.extname(file.hapi.filename).toLowerCase();
-        if (!allowedExtensions.includes(ext)) {
-            return h.response({ message: 'Format gambar tidak sesuai, hanya menerima file dengan ekstensi .jpg, .jpeg, .png, dan .gif ' }).code(400);
+        // validasi username
+        const queryUsername = 'SELECT COUNT(*) as count FROM users WHERE username = ?';
+        const [rowsUsername] = await conn.query(queryUsername, [username]);
+        const countUsername = rowsUsername[0].count;
+        const isTakenUsername = countUsername > 1;
+        if (isTakenUsername) {
+            return h.response({ message: 'Username sudah digunakan.' }).code(200);
         }
 
-        // Membuat custom image name
-        const fileExtension = file.hapi.filename.split('.').pop().toLowerCase();
-        filename = 'profile' + '_' + Date.now() + '.' + fileExtension;
-        const filePath = `upload-foto/profile/${filename}`;
-        // Upload the file to GCS
-        const gcsFile = bucket.file(filePath);
-        const gcsStream = gcsFile.createWriteStream();
-
-        gcsStream.on('error', (err) => {
-            console.error('Error upload file ke GCS:', err);
+        const validationSchema = Joi.object({
+            username: Joi.string().required().messages({
+                'any.required': 'Username tidak boleh kosong'
+            }),
+            email: Joi.string().email().required().messages({
+                'any.required': 'Email tidak boleh kosong',
+            }),
+            nama: Joi.string().required().messages({
+                'any.required': 'Nama tidak boleh kosong'
+            }),
+            id_alergi: Joi.string(),
+            file: Joi.optional()
         });
 
-        gcsStream.on('finish', () => {
-            console.log('File berhasil diupload ke GCS:', filePath);
+        const payloadWithFile = {
+            ...req.payload,
+            file: req.payload.file
+          };
+
+        const { error, value } = validationSchema.validate(payloadWithFile, {
+            abortEarly: false,
         });
 
-        file.pipe(gcsStream);
 
-        try {
-            const query = 'UPDATE users SET username = ? , email = ?, nama = ?, id_alergi = ?, foto = ? WHERE id = ?';
-            const result = await conn.query(query, [username, email, nama, id_alergi, filename, id]);
-            
-            return h.response({message: 'Data berhasil diubah'}).code(200);
-        } catch(err) {
-            return h.response({message: 'Data gagal diubah', err}).code(500);
+        if(file != null || file == '') {
+            // Inisiasi GCS
+            const storage = new Storage({
+                projectId: process.env.PROJECT_ID_GCP,
+                keyFilename: process.env.KEY_STORAGE,
+            });
+
+            const bucketName = process.env.BUCKET_NAME;
+            const bucket = storage.bucket(bucketName);
+
+            // Cek apakah file terupload
+            if (file.hapi.filename === '') {
+                return h.response({ message: 'Belum ada file yang terupload' }).code(400);
+            }
+
+            // Validate tipe gambar
+            const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            // Check if the file extension is allowed
+            const ext = path.extname(file.hapi.filename).toLowerCase();
+            if (!allowedExtensions.includes(ext)) {
+                return h.response({ message: 'Format gambar tidak sesuai, hanya menerima file dengan ekstensi .jpg, .jpeg, .png, dan .gif ' }).code(400);
+            }
+
+            // Membuat custom image name
+            const fileExtension = file.hapi.filename.split('.').pop().toLowerCase();
+            filename = 'profile' + '_' + Date.now() + '.' + fileExtension;
+            const filePath = `upload-foto/profile/${filename}`;
+            // Upload the file to GCS
+            const gcsFile = bucket.file(filePath);
+            const gcsStream = gcsFile.createWriteStream();
+
+            gcsStream.on('error', (err) => {
+                console.error('Error upload file ke GCS:', err);
+            });
+
+            gcsStream.on('finish', () => {
+                console.log('File berhasil diupload ke GCS:', filePath);
+            });
+
+            file.pipe(gcsStream);
+
+            if (error) {
+                // Invalid input, return an error response
+                const errorMessages = error.details.map((err) => err.message);
+                return h.response({warning: errorMessages}).code(400);
+            } else {
+                try {
+                    const [profile] = await conn.query('SELECT foto FROM users WHERE id = ?', [id]);
+                    const resFoto = profile[0];
+                    // const urlResFoto = `upload-foto/profile/${resFoto.foto}`;
+
+                    // return {resFoto, filename};
+                    const bucketName = process.env.BUCKET_NAME;
+                    const filePath = `upload-foto/profile/${resFoto.foto}`;
+
+                    const cekFile = storage.bucket(bucketName).file(filePath);
+                    // Check if the file exists
+                    cekFile.exists(async (err, exists) => {
+                        if (err) {
+                          console.error('Error checking file existence:', err);
+                          return;
+                        }
+                      
+                        if (exists) {
+                          // The file exists, so delete it
+                          cekFile.delete((err) => {
+                            if (err) {
+                              console.error('Error deleting file:', err);
+                              return;
+                            }
+                      
+                            console.log('File deleted successfully.');
+                          });
+                        } else {
+                            console.log('File does not exist in GCS.');
+                        }
+                      });    
+                    const query = 'UPDATE users SET username = ? , email = ?, nama = ?, id_alergi = ?, foto = ? WHERE id = ?';
+                    const result = await conn.query(query, [username, email, nama, id_alergi, filename, id]);
+                    
+                    return h.response({status: 'success', message: 'Data berhasil diubah', foto: filename}).code(200);      
+                } catch(err) {
+                    return h.response({status: 'error', message: 'Data gagal diubah'+err}).code(500);
+                }
+            }       
+        } else {
+            if (error) {
+                // Invalid input, return an error response
+                const errorMessages = error.details.map((err) => err.message);
+                return h.response({warning: errorMessages}).code(400);
+            } else {
+                try {
+                    const query = 'UPDATE users SET username = ? , email = ?, nama = ?, id_alergi = ? WHERE id = ?';
+                    const result = await conn.query(query, [username, email, nama, id_alergi, id]);
+                    
+                    return h.response({status: 'success', message: 'Data berhasil diubah'}).code(200);
+                } catch(err) {
+                    return h.response({status: 'error', message: 'Data gagal diubah'+err}).code(500);
+                }
+            } 
         }
     } else {
-        try {
-            const query = 'UPDATE users SET username = ? , email = ?, nama = ?, id_alergi = ? WHERE id = ?';
-            const result = await conn.query(query, [username, email, nama, id_alergi, id]);
-            
-            return h.response({message: 'Data berhasil diubah'}).code(200);
-        } catch(err) {
-            return h.response({message: 'Data gagal diubah', err}).code(500);
-        }
+        return h.response({status: 'error', message: 'Data tidak ditemukan'}).code(404);
     }
 }
 // Get bookmark
@@ -334,15 +425,31 @@ const deleteBookmarkHandler = async(req, h) => {
 
         const bucketName = process.env.BUCKET_NAME;
         const filePath = `upload-foto/roti/${resFoto.foto}`;
-        const deleteImg = storage.bucket(bucketName).file(filePath).delete();
-        if(deleteImg) {
-            console.log('Image deleted successfully.');
-        }
+        const cekFile = storage.bucket(bucketName).file(filePath);
+        // Check if the file exists
+        cekFile.exists(async (err, exists) => {
+            if (err) {
+                console.error('Error checking file existence:', err);
+                return;
+            }
+            
+            if (exists) {
+                // The file exists, so delete it
+                cekFile.delete((err) => {
+                if (err) {
+                    console.error('Error deleting file:', err);
+                    return;
+                }
+            
+                console.log('File deleted successfully.');
+                });
+            } else {
+                console.log('File does not exist in GCS.');
+            }
+        });  
         
         const result = await conn.query(`DELETE FROM bookmark WHERE id = ?`, [id]);
-        if(result) {
-            return h.response({status: 'success', message: 'Data berhasil dihapus'}).code(200);
-        }
+        return h.response({status: 'success', message: 'Data berhasil dihapus'}).code(200);
     } catch(err) {
         return h.response({status: 'error', message: 'Internal Server Error: '+err}).code(200);
     }
